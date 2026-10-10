@@ -191,8 +191,11 @@ void Encoder::Impl::init_block_meta()
 	meta_buffer = device->create_buffer(info);
 	device->set_name(*meta_buffer, "meta-buffer");
 
-	// Worst case estimate.
-	info.size = aligned_width * aligned_height * 2;
+	// Worst case estimate. 4:4:4 carries 3 samples per pixel against 1.5 for
+	// 4:2:0, so it needs twice the headroom or busy content overruns this
+	// buffer on the GPU.
+	info.size = VkDeviceSize(aligned_width) * aligned_height *
+	            (chroma == ChromaSubsampling::Chroma444 ? 4 : 2);
 	payload_data = device->create_buffer(info);
 	device->set_name(*payload_data, "payload-data");
 
